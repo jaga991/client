@@ -14,7 +14,7 @@ function App() {
     user: "Player",
     score: 0,
     maxScore: 0,
-    level: 2,
+    level: 1,
     maxLevel: 1,
   })
 
@@ -28,7 +28,7 @@ function App() {
   }
 
   let generateAndSetCards = async function (level) {
-    let numArr = Random({min: 1, max: 300, type: 'array', arraySize: level+4});
+    let numArr = Random({min: 1, max: 290, type: 'array', arraySize: level+4, unique: true});
     let tempArr = []
 
     for (let i = 0; i < level + 4; i++) {
@@ -54,6 +54,16 @@ function App() {
     setCards(shuffleArray(cards));
   }
 
+  function checkIfAllSelected(arr) {
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].selected == false) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   //At every card selection
   function onCardClick(e) {
     let currentCardState = JSON.parse(JSON.stringify(cards));
@@ -65,24 +75,45 @@ function App() {
         currentCardState[i].selected = true;
 
         //if all cards selected is true
-        
+        if (checkIfAllSelected(currentCardState) == true) {
 
-        shuffleArray(currentCardState);
-        
-        currentGameInfoState.score = currentGameInfoState.score + 1;
-        if (currentGameInfoState.score > currentGameInfoState.maxScore) {
-          currentGameInfoState.maxScore = currentGameInfoState.score;
+          currentGameInfoState.score = currentGameInfoState.score + 1
+          currentGameInfoState.level = currentGameInfoState.level + 1;
+          if (currentGameInfoState.score > currentGameInfoState.maxScore) {
+            currentGameInfoState.maxScore = currentGameInfoState.score;
+          }
+          if (currentGameInfoState.level > currentGameInfoState.maxLevel) {
+            currentGameInfoState.maxLevel = currentGameInfoState.level;
+          }
+
+          generateAndSetCards(currentGameInfoState.level);
+          setGameInfo(currentGameInfoState);
         }
-        setGameInfo(currentGameInfoState);
-        setCards(currentCardState);
+        
+        else {
+          shuffleArray(currentCardState);
+          
+          currentGameInfoState.score = currentGameInfoState.score + 1;
+          if (currentGameInfoState.score > currentGameInfoState.maxScore) {
+            currentGameInfoState.maxScore = currentGameInfoState.score;
+          }
+          setGameInfo(currentGameInfoState);
+          setCards(currentCardState);
 
-        break;
+          break;
+        }
       }
 
-      if ((currentCardState[i].id == e.currentTarget.id) && (currentCardState[i].selected == true)) {
+
+      else if ((currentCardState[i].id == e.currentTarget.id) && (currentCardState[i].selected == true)) {
         currentGameInfoState.score = 0;
-        generateAndSetCards(currentGameInfoState.level);
+        currentGameInfoState.level = 1;
         setGameInfo(currentGameInfoState);
+        generateAndSetCards(currentGameInfoState.level);
+
+        //set score to 0
+        //set level to 1
+        //generate and set cards
       }
     }
   }
